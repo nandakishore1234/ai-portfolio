@@ -1,0 +1,233 @@
+.contact {
+  padding: 36px 0 88px;
+  scroll-margin-top: 84px;
+}
+
+.contact-head {
+  max-width: 680px;
+  margin: 0 auto 48px;
+  text-align: center;
+}
+
+.contact-head p:first-child {
+  display: inline-flex;
+  margin-bottom: 12px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.contact-head h2 {
+  font-size: clamp(2.2rem, 4vw, 3.3rem);
+  line-height: 1.1;
+  letter-spacing: -0.045em;
+  font-weight: 800;
+}
+
+.contact-head h2 span {
+  margin-left: 0.22em;
+  background: linear-gradient(90deg, #60a5fa, #818cf8 40%, #c084fc);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.contact-head p:last-child {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(320px, 1fr);
+  gap: 36px 48px;
+  align-items: start;
+}
+
+.contact-copy h3 {
+  font-size: 1.35rem;
+  letter-spacing: -0.03em;
+}
+
+.contact-copy > p {
+  margin-top: 10px;
+  max-width: 460px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.contact-copy ul {
+  display: grid;
+  gap: 12px;
+  margin-top: 22px;
+  padding: 0;
+  list-style: none;
+}
+
+.contact-copy li a,
+.channel-static {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--card-solid);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 10px 28px rgba(99, 110, 168, 0.08);
+}
+
+.contact-copy li a:hover {
+  transform: translateY(-2px);
+}
+
+.channel-icon {
+  width: 42px;
+  height: 42px;
+  flex: none;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+}
+
+.contact-copy small {
+  display: block;
+  color: var(--faint);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.contact-copy strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.98rem;
+  letter-spacing: -0.02em;
+}
+
+.contact-social {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 22px;
+  color: var(--faint);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.contact-social div {
+  display: flex;
+  gap: 8px;
+}
+
+.contact-social a {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  background: var(--card-solid);
+  border: 1px solid var(--line);
+}
+
+.contact-social a:hover {
+  color: var(--text);
+  transform: translateY(-2px);
+}
+
+.contact-form {
+  display: grid;
+  gap: 14px;
+  padding: 22px;
+  border-radius: 22px;
+  background: var(--card-solid);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 22px 50px rgba(99, 110, 168, 0.14);
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.contact-form label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.contact-form input,
+.contact-form textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--text);
+  font-weight: 560;
+}
+
+.contact-form textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.contact-form button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 4px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  color: #fff;
+  font-weight: 800;
+  background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 52%, #ec4899 100%);
+  box-shadow: 0 12px 24px rgba(139, 92, 246, 0.28);
+}
+
+.contact-form button:hover {
+  transform: translateY(-1px);
+}
+
+.contact-status {
+  margin: 0;
+  color: #7c3aed;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.contact-status-error {
+  color: #dc2626;
+}
+
+.contact-form button:disabled {
+  opacity: 0.65;
+  cursor: default;
+  transform: none;
+}
+
+:root[data-theme="dark"] .contact-copy li a,
+:root[data-theme="dark"] .channel-static,
+:root[data-theme="dark"] .contact-form {
+  border-color: rgba(255, 255, 255, 0.06);
+  box-shadow: none;
+}
+
+@media (max-width: 860px) {
+  .contact-grid,
+  .field-row {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-social {
+    flex-wrap: wrap;
+  }
+}

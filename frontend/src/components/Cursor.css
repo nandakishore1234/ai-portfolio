@@ -1,0 +1,32 @@
+.cursor-ring,
+.cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.cursor-ring {
+  z-index: 9998;
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border: 2px solid rgba(14, 165, 233, 0.55);
+  transition: transform 0.15s ease-out, opacity 0.3s ease;
+}
+
+.cursor-dot {
+  z-index: 9999;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  background: linear-gradient(45deg, #0ea5e9, #ec4899);
+  transition: opacity 0.3s ease;
+}
+
+html.has-cursor,
+html.has-cursor * {
+  cursor: none !important;
+}
