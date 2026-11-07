@@ -181,6 +181,12 @@
     background: var(--soft);
     color: var(--text);
   }
+
+  .mobile-nav a.mobile-hire,
+  .mobile-nav a.mobile-hire:hover {
+    color: #fff;
+    background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 52%, #ec4899 100%);
+  }
 }
 
 @media (max-width: 640px) {
