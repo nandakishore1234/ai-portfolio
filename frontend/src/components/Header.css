@@ -127,6 +127,26 @@
   .header-inner {
     display: flex;
     justify-content: space-between;
+    min-height: 72px;
+    gap: 12px;
+  }
+
+  .brand {
+    min-width: 0;
+  }
+
+  .brand-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .header-actions {
+    flex-shrink: 0;
+  }
+
+  .header-actions .hire {
+    display: none;
   }
 
   .nav {
@@ -135,6 +155,11 @@
 
   .menu-btn {
     display: grid;
+  }
+
+  .mobile-hire {
+    justify-content: center;
+    margin: 8px 12px 4px;
   }
 
   .mobile-nav {

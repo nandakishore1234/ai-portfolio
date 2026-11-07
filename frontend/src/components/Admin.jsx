@@ -209,13 +209,7 @@ export default function Admin() {
                       {asset.room} · {formatBytes(asset.size_bytes || 0)}
                     </span>
                   </div>
-                  {asset.public_url ? (
-                    <a href={asset.public_url} target="_blank" rel="noreferrer">
-                      Open
-                    </a>
-                  ) : (
-                    <span>{asset.storage_path}</span>
-                  )}
+                  <audio controls preload="none" src={`/api/admin/assets/${asset.id}/audio`} />
                 </li>
               ))}
             </ul>

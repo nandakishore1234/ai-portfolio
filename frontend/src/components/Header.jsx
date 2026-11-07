@@ -136,6 +136,10 @@ export default function Header() {
 
       {open && (
         <nav className="mobile-nav" aria-label="Mobile">
+          <a className="hire mobile-hire" href={hireHref} onClick={() => setOpen(false)}>
+            Hire Me
+            <span aria-hidden="true">→</span>
+          </a>
           {navLinks.map((link) => (
             <a
               key={link.href}

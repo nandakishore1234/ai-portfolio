@@ -1,6 +1,6 @@
 # Nanda Kishore — Portfolio
 
-Personal site with RAG chat, a LiveKit voice call (Cartesia + Gemini, with local Whisper / Piper / Ollama fallback), contact form, admin document upload, and mixed call recordings in SeaweedFS + PostgreSQL.
+Personal site with RAG chat, a LiveKit voice call (Cartesia + Gemini), contact form, admin document upload, and mixed call recordings in SeaweedFS + PostgreSQL.
 
 This README is the full path from a fresh clone to a running app.
 
@@ -14,7 +14,7 @@ This README is the full path from a fresh clone to a running app.
 | LiveKit server | Local WebRTC rooms on `ws://127.0.0.1:7880` |
 | PostgreSQL | `admins` + `assets` tables |
 | SeaweedFS | Stores the mixed call WAV |
-| Ollama | Embeddings always (unless you change it); chat LLM if Gemini keys are empty |
+| Gemini | Chat answers and embeddings (`gemini-embedding-001`) |
 | Qdrant | Embedded on disk at `backend/data/qdrant` when `QDRANT_PATH=qdrant` |
 
 Chat and voice share the same knowledge files. Voice does **not** call `/api/chat`.
@@ -34,7 +34,7 @@ backend/
   app/                        # FastAPI
   agent/                      # LangGraph chat + voice graphs
   voice/                      # LiveKit worker
-  scripts/                    # download LiveKit, Piper, SeaweedFS (Windows .ps1 / Unix .sh)
+  scripts/                    # download LiveKit and SeaweedFS (Windows .ps1 / Unix .sh)
   livekit.yaml                # local LiveKit config
   requirements.txt            # all Python packages
   .env.example                # copy to .env
@@ -42,14 +42,13 @@ backend/
 
 ## Prerequisites (install these yourself)
 
-Do these once. Python packages are **not** installed one by one; they all come from `requirements.txt` later. Use **Python 3.13** (not 3.15). Ollama is needed for embeddings even when Gemini is used for chat.
+Do these once. Python packages are **not** installed one by one; they all come from `requirements.txt` later. Use **Python 3.13** (not 3.15). Chat and embeddings use Gemini. Voice uses Cartesia. No local LLM, Whisper, or Piper.
 
 ### Windows
 
 - Python 3.13 — [python.org](https://www.python.org/downloads/)
 - Node.js 20+ — [nodejs.org](https://nodejs.org/)
 - PostgreSQL 16+ — [postgresql.org](https://www.postgresql.org/download/windows/)
-- Ollama — [ollama.com](https://ollama.com)
 - Docker Desktop (optional) — [docker.com](https://www.docker.com/products/docker-desktop/)
 - Git
 
@@ -73,19 +72,13 @@ sudo usermod -aG docker "$USER"
 # then log out and back in
 ```
 
-Ollama on Ubuntu:
-
-```bash
-curl -fsSL https://ollama.com/install.sh | sh
-```
-
 ### macOS
 
 Install [Homebrew](https://brew.sh) first, then:
 
 ```bash
 brew install git python@3.13 node postgresql@16
-brew install --cask ollama docker
+brew install --cask docker
 brew services start postgresql@16
 ```
 
@@ -94,8 +87,6 @@ If `python3.13` is not on your PATH:
 ```bash
 export PATH="$(brew --prefix python@3.13)/bin:$PATH"
 ```
-
-Optional if you skip Cartesia / Gemini: Piper files (script below). First Whisper run downloads model weights (slow).
 
 ## 1. Clone
 
@@ -157,7 +148,6 @@ What that file installs:
 | `fastapi`, `uvicorn[standard]`, `python-multipart`, `pydantic-settings` | API |
 | `langchain-*`, `langgraph`, `qdrant-client` | RAG |
 | `livekit-agents`, `livekit-plugins-*`, `livekit-api` | Voice |
-| `faster-whisper`, `piper-tts` | Local STT/TTS fallback |
 | `httpx` | SeaweedFS / Resend HTTP |
 | `psycopg[binary]` | PostgreSQL |
 | `PyJWT` | Admin JWT |
@@ -207,10 +197,11 @@ CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
 
 `ADMIN_SECRET` must be **at least 32 characters** (JWT signing).
 
-Fill Gemini and Cartesia if you want cloud LLM / STT / TTS:
+Gemini and Cartesia are required. Chat and embeddings use Gemini. Voice uses Cartesia.
 
 ```env
 GEMINI_MODEL=gemini-2.5-flash
+GEMINI_EMBED_MODEL=gemini-embedding-001
 GEMINI_API_KEY_1=
 GEMINI_API_KEY_2=
 
@@ -221,7 +212,7 @@ CARTESIA_TTS_VOICE_ID_2=
 CARTESIA_TTS_VOICE_ID=          # fallback if a numbered voice id is blank
 ```
 
-Key 1 uses voice id 1, key 2 uses voice id 2, and so on. Empty Gemini → Ollama chat. Empty Cartesia → Whisper + Piper.
+Key 1 uses voice id 1, key 2 uses voice id 2, and so on. At least one Gemini key and one Cartesia key must be set.
 
 Contact form needs **one** of:
 
@@ -271,26 +262,14 @@ On API start, `init_db()` creates:
 
 SQLite is not used.
 
-## 8. Ollama models
+## 8. LiveKit binary and SeaweedFS binary
 
-```bash
-ollama pull nomic-embed-text
-ollama pull qwen2
-```
-
-On macOS, open the Ollama app once so the service is running.
-
-Keep Ollama running. Embeddings use `nomic-embed-text`. `qwen2` is the chat fallback.
-
-## 9. Piper, LiveKit binary, SeaweedFS binary
-
-Writes Piper under `backend/data/piper/` and binaries under `backend/bin/`.
+Writes binaries under `backend/bin/`.
 
 **Windows**
 
 ```powershell
 cd backend
-powershell -ExecutionPolicy Bypass -File .\scripts\download_piper_voice.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\download_livekit_server.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\download_seaweedfs.ps1
 ```
@@ -303,7 +282,7 @@ chmod +x scripts/download_deps.sh
 ./scripts/download_deps.sh
 ```
 
-## 10. LiveKit server
+## 9. LiveKit server
 
 Leave this terminal open. Ports: `7880` (WS), `7881` (TCP), UDP `50000–50100`.  
 Keys in `livekit.yaml` must match `LIVEKIT_API_KEY` / `LIVEKIT_API_SECRET` (secret ≥ 32 chars).
@@ -333,7 +312,7 @@ docker run --rm -p 7880:7880 -p 7881:7881 -p 7882:7882/udp \
 
 On Windows PowerShell, use `${PWD}` instead of `$PWD`.
 
-## 11. SeaweedFS (recordings)
+## 10. SeaweedFS (recordings)
 
 Filer: [http://127.0.0.1:8888](http://127.0.0.1:8888). If it is down, WAVs go to `backend/data/recordings/` and the path is still stored in Postgres.
 
@@ -362,7 +341,7 @@ mkdir -p data/seaweed/volume data/seaweed/master
 ./bin/weed server -dir="$PWD/data/seaweed/volume" -master.dir="$PWD/data/seaweed/master" -filer -s3 -ip=127.0.0.1 -ip.bind=127.0.0.1
 ```
 
-## 12. Run everything (six terminals)
+## 11. Run everything (six terminals)
 
 Start in this order. New terminal for each.
 
@@ -374,7 +353,7 @@ Start in this order. New terminal for each.
 
 **B — SeaweedFS:** `docker start seaweed` (or the `weed` command above)
 
-**C — LiveKit** (see section 10)
+**C — LiveKit** (see section 9)
 
 **D — FastAPI**
 
@@ -420,7 +399,7 @@ After a call ends: one stereo WAV (visitor left, agent right) in SeaweedFS, one 
 
 Restart **uvicorn** after Python/API changes. Restart **voice worker** after `voice/` or prompt changes. Restart **`npm run dev`** after frontend `.env` changes.
 
-## 13. Production build (frontend)
+## 12. Production build (frontend)
 
 ```bash
 cd frontend
@@ -436,8 +415,7 @@ Full comments: [`backend/.env.example`](backend/.env.example), [`frontend/.env.e
 
 | Variable | Where | Purpose |
 | --- | --- | --- |
-| `OLLAMA_*` | backend | Embeddings; chat LLM if no Gemini |
-| `GEMINI_MODEL` / `GEMINI_API_KEY_1`…`5` | backend | Chat + voice RAG, key fallback |
+| `GEMINI_MODEL` / `GEMINI_EMBED_MODEL` / `GEMINI_API_KEY_1`…`5` | backend | Chat, voice RAG, and embeddings. At least one key |
 | `CARTESIA_API_KEY_1`…`5` | backend | STT + TTS, key fallback |
 | `CARTESIA_TTS_VOICE_ID_1`…`5` | backend | Voice id for that key |
 | `CARTESIA_TTS_VOICE_ID` | backend | Voice id if a numbered slot is empty |
@@ -447,8 +425,6 @@ Full comments: [`backend/.env.example`](backend/.env.example), [`frontend/.env.e
 | `CONTACT_TO_EMAIL` / `RESEND_*` / `SMTP_*` | backend | Contact form mail |
 | `LIVEKIT_URL` / `LIVEKIT_API_KEY` / `LIVEKIT_API_SECRET` | backend | Must match `livekit.yaml` |
 | `LIVEKIT_ROOM_PREFIX` | backend | Room name prefix |
-| `WHISPER_*` | backend | Fallback STT |
-| `PIPER_MODEL_PATH` / `PIPER_SPEED` | backend | Fallback TTS |
 | `VOICE_IDLE_PROCESSES` | backend | Concurrent voice jobs |
 | `ADMIN_USERNAME` / `ADMIN_PASSWORD` / `ADMIN_SECRET` | backend | Seeds `admins`; JWT (`ADMIN_SECRET` ≥ 32 chars) |
 | `SEAWEEDFS_FILER_URL` / `SEAWEEDFS_PREFIX` | backend | Recording store |
