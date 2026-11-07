@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { profile } from "../data/profile";
 import "./Hero.css";
+import "./TalkChoice.css";
 
 function useTypewriter(words) {
   const [text, setText] = useState(words[0]);
@@ -58,6 +59,34 @@ function ChatIcon() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
       <path d="M7 17.2 4.2 19.6a.7.7 0 0 1-1.1-.6V8.1A3.6 3.6 0 0 1 6.7 4.5h10.6A3.6 3.6 0 0 1 21 8.1v5.6a3.6 3.6 0 0 1-3.6 3.5H7z" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function PhoneIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+      <path
+        d="M8 3.5h2.4l1.2 3.4-1.8 1.2a11 11 0 0 0 4.8 4.8l1.2-1.8 3.4 1.2V15a2 2 0 0 1-2 2A13.5 13.5 0 0 1 4 6.5a2 2 0 0 1 2-2Z"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function ChevronIcon({ open }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="18"
+      height="18"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden="true"
+      style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform 0.2s ease" }}
+    >
+      <path d="m7 10 5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -136,15 +165,33 @@ const socialIcons = {
   LinkedIn: LinkedInIcon,
 };
 
-export default function Hero({ onTalk }) {
+export default function Hero({ onChat, onCall }) {
   const typed = useTypewriter(profile.roles);
   const article = /^[aeiou]/i.test(typed) ? "an" : "a";
   const codeRef = useRef(null);
   const yearsRef = useRef(null);
   const projectsRef = useRef(null);
+  const talkRef = useRef(null);
+  const [talkOpen, setTalkOpen] = useState(false);
   useCardTilt(codeRef);
   useCardTilt(yearsRef);
   useCardTilt(projectsRef);
+
+  useEffect(() => {
+    if (!talkOpen) return undefined;
+    const onPointer = (event) => {
+      if (!talkRef.current?.contains(event.target)) setTalkOpen(false);
+    };
+    const onKey = (event) => {
+      if (event.key === "Escape") setTalkOpen(false);
+    };
+    document.addEventListener("mousedown", onPointer);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onPointer);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [talkOpen]);
 
   return (
     <section className="hero" id="home">
@@ -186,10 +233,56 @@ export default function Hero({ onTalk }) {
               View My Work
               <ArrowIcon />
             </a>
-            <button className="btn btn-ghost" type="button" onClick={onTalk}>
-              Let's Talk
-              <ChatIcon />
-            </button>
+            <div className="talk-menu" ref={talkRef}>
+              <button
+                className="btn btn-ghost talk-menu-trigger"
+                type="button"
+                aria-haspopup="menu"
+                aria-expanded={talkOpen}
+                onClick={() => setTalkOpen((value) => !value)}
+              >
+                Let's Talk
+                <ChevronIcon open={talkOpen} />
+              </button>
+              {talkOpen ? (
+                <div className="talk-menu-panel" role="menu" aria-label="Talk options">
+                  <button
+                    type="button"
+                    className="talk-choice-option talk-choice-option-active"
+                    role="menuitem"
+                    onClick={() => {
+                      setTalkOpen(false);
+                      onChat?.();
+                    }}
+                  >
+                    <span className="talk-choice-icon" aria-hidden="true">
+                      <ChatIcon />
+                    </span>
+                    <span>
+                      <strong>Chat with me</strong>
+                      <small>Ask about my work, projects, or AI</small>
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    className="talk-choice-option"
+                    role="menuitem"
+                    onClick={() => {
+                      setTalkOpen(false);
+                      onCall?.();
+                    }}
+                  >
+                    <span className="talk-choice-icon" aria-hidden="true">
+                      <PhoneIcon />
+                    </span>
+                    <span>
+                      <strong>Call me</strong>
+                      <small>Discuss a project or opportunity</small>
+                    </span>
+                  </button>
+                </div>
+              ) : null}
+            </div>
           </div>
 
           <div className="social">

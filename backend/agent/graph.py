@@ -4,7 +4,7 @@ from datetime import date
 from langchain_core.messages import HumanMessage
 from langgraph.graph import END, START, StateGraph
 
-from agent.prompts import ANSWER_PROMPT, REWRITE_PROMPT
+from agent.prompts import ANSWER_PROMPT, REWRITE_PROMPT, VOICE_ANSWER_PROMPT
 from agent.state import GraphState
 from app.rag.documents import origin_reply, pinned_documents
 
@@ -39,6 +39,9 @@ _FOLLOW_UP = re.compile(
 
 def build_rag_graph(llm, vector_store, top_k: int):
     def rewrite(state: GraphState):
+        # Voice skips the extra rewrite LLM call to cut turn latency.
+        if state.get("mode") == "voice":
+            return {"standalone_question": state["question"]}
         if not state["history"].strip() or not _FOLLOW_UP.search(state["question"]):
             return {"standalone_question": state["question"]}
         message = llm.invoke(
@@ -66,19 +69,15 @@ def build_rag_graph(llm, vector_store, top_k: int):
             )
         else:
             context = "No matching notes."
-        message = llm.invoke(
-            [
-                HumanMessage(
-                    content=_fill(
-                        ANSWER_PROMPT,
-                        today=date.today().strftime("%d %B %Y"),
-                        context=context,
-                        history=state["history"] or "None",
-                        question=state["question"],
-                    )
-                )
-            ]
-        )
+        prompt = VOICE_ANSWER_PROMPT if state.get("mode") == "voice" else ANSWER_PROMPT
+        fill_kwargs = {
+            "today": date.today().strftime("%d %B %Y"),
+            "context": context,
+            "question": state["question"],
+        }
+        if prompt is ANSWER_PROMPT:
+            fill_kwargs["history"] = state["history"] or "None"
+        message = llm.invoke([HumanMessage(content=_fill(prompt, **fill_kwargs))])
         return {"answer": _text(message)}
 
     graph = StateGraph(GraphState)

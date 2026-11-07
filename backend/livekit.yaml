@@ -1,0 +1,20 @@
+# Local LiveKit server config (dev only).
+# Start with: livekit-server --config livekit.yaml
+# Or: docker run --rm -p 7880:7880 -p 7881:7881 -p 7882:7882/udp -v ${PWD}/livekit.yaml:/livekit.yaml livekit/livekit-server --config /livekit.yaml
+
+port: 7880
+bind_addresses:
+  - "127.0.0.1"
+
+rtc:
+  tcp_port: 7881
+  port_range_start: 50000
+  port_range_end: 50100
+  use_external_ip: false
+
+keys:
+  # LiveKit requires secrets >= 32 characters.
+  devkey: secretsecretsecretsecretsecretsecret12
+
+logging:
+  level: info

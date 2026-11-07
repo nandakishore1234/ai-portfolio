@@ -33,6 +33,7 @@ def chat(body: ChatRequest, request: Request):
                 "standalone_question": "",
                 "context": [],
                 "answer": "",
+                "mode": body.mode or "chat",
             }
         )
     except Exception as exc:

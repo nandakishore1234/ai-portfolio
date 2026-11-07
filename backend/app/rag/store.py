@@ -36,20 +36,29 @@ def build_embeddings() -> NomicEmbeddings:
     )
 
 
-def build_client() -> QdrantClient:
+def build_client(*, local_name: str | None = None, in_memory: bool = False) -> QdrantClient:
+    if in_memory:
+        return QdrantClient(":memory:")
     raw = settings.qdrant_path.strip()
     if raw:
         path = Path(raw)
         if not path.is_absolute():
             path = DATA_DIR / path
+        if local_name:
+            path = path.parent / local_name
         path.parent.mkdir(parents=True, exist_ok=True)
         return QdrantClient(path=str(path))
     api_key = settings.qdrant_api_key.strip() or None
     return QdrantClient(url=settings.qdrant_url, api_key=api_key)
 
 
-def build_store(client: QdrantClient, embeddings: Embeddings) -> QdrantVectorStore:
-    _ensure_index(client, embeddings)
+def build_store(
+    client: QdrantClient,
+    embeddings: Embeddings,
+    *,
+    hash_file: Path | None = None,
+) -> QdrantVectorStore:
+    _ensure_index(client, embeddings, hash_file=hash_file or HASH_FILE)
     return QdrantVectorStore(
         client=client,
         collection_name=settings.qdrant_collection,
@@ -57,11 +66,11 @@ def build_store(client: QdrantClient, embeddings: Embeddings) -> QdrantVectorSto
     )
 
 
-def _ensure_index(client: QdrantClient, embeddings: Embeddings) -> None:
+def _ensure_index(client: QdrantClient, embeddings: Embeddings, *, hash_file: Path) -> None:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     fingerprint = f"{INDEX_VERSION}:{settings.ollama_embed_model}:{knowledge_fingerprint()}"
     names = {item.name for item in client.get_collections().collections}
-    stored = HASH_FILE.read_text(encoding="utf-8").strip() if HASH_FILE.exists() else ""
+    stored = hash_file.read_text(encoding="utf-8").strip() if hash_file.exists() else ""
     if settings.qdrant_collection in names and stored == fingerprint:
         return
 
@@ -79,4 +88,4 @@ def _ensure_index(client: QdrantClient, embeddings: Embeddings) -> None:
         embedding=embeddings,
     )
     store.add_documents(documents, ids=[str(uuid5(NAMESPACE_URL, doc.page_content)) for doc in documents])
-    HASH_FILE.write_text(fingerprint, encoding="utf-8")
+    hash_file.write_text(fingerprint, encoding="utf-8")

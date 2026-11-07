@@ -89,7 +89,9 @@ export default function Contact() {
           email: current.email,
         }));
         window.setTimeout(() => {
-          document.getElementById("contact-name")?.focus();
+          const send = document.getElementById("contact-send");
+          send?.scrollIntoView({ behavior: "smooth", block: "center" });
+          send?.focus();
         }, 350);
       }
     };
@@ -254,7 +256,7 @@ export default function Contact() {
                 required
               />
             </label>
-            <button type="submit" disabled={busy}>
+            <button id="contact-send" type="submit" disabled={busy}>
               {busy ? "Sending…" : "Send Message"}
               <span aria-hidden="true">→</span>
             </button>

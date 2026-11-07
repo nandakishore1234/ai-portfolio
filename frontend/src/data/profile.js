@@ -2,7 +2,7 @@ export const profile = {
   firstName: "Nanda",
   lastName: "Kishore",
   initials: "NK",
-  brand: "Nanda",
+  brand: "Nandakishore",
   brandNote: "Software & AI",
   email: "knandakishore6@gmail.com",
   phone: "+91 8281588640",

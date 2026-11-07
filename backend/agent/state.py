@@ -9,3 +9,4 @@ class GraphState(TypedDict):
     standalone_question: str
     context: list[Document]
     answer: str
+    mode: str

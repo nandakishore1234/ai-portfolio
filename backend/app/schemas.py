@@ -8,6 +8,7 @@ class ChatMessage(BaseModel):
 
 class ChatRequest(BaseModel):
     messages: list[ChatMessage] = Field(min_length=1, max_length=20)
+    mode: str = Field(default="chat", pattern="^(chat|voice)$")
 
 
 class ChatResponse(BaseModel):
@@ -25,3 +26,15 @@ class ContactRequest(BaseModel):
 class ContactResponse(BaseModel):
     ok: bool
     detail: str
+
+
+class LiveKitTokenResponse(BaseModel):
+    url: str
+    token: str
+    room: str
+    identity: str
+
+
+class AdminLoginRequest(BaseModel):
+    username: str = Field(min_length=1, max_length=80)
+    password: str = Field(min_length=1, max_length=200)

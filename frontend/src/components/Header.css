@@ -167,4 +167,8 @@
   .brand-note {
     display: none;
   }
+
+  .brand-name {
+    font-size: 0.92rem;
+  }
 }
