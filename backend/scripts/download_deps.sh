@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Download Piper voice, LiveKit server, and SeaweedFS for Linux/macOS.
+# Download LiveKit server and SeaweedFS for Linux/macOS.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
@@ -14,16 +14,7 @@ elif [[ "$OS" == "linux" ]]; then GOOS=linux
 else echo "Unsupported OS: $OS"; exit 1
 fi
 
-mkdir -p "$ROOT/bin" "$ROOT/data/piper" "$ROOT/data/seaweed/volume" "$ROOT/data/seaweed/master"
-
-PIPER_BASE="https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/ryan/high"
-for f in en_US-ryan-high.onnx en_US-ryan-high.onnx.json; do
-  if [[ ! -f "$ROOT/data/piper/$f" ]]; then
-    echo "Downloading Piper $f ..."
-    curl -fsSL "$PIPER_BASE/$f" -o "$ROOT/data/piper/$f"
-  fi
-done
-echo "Piper ready in $ROOT/data/piper"
+mkdir -p "$ROOT/bin" "$ROOT/data/seaweed/volume" "$ROOT/data/seaweed/master"
 
 LK_VER="1.13.11"
 LK_BIN="$ROOT/bin/livekit-server"

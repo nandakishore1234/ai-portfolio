@@ -27,8 +27,6 @@ from app.db import init_db
 from app.keys import KeyPool
 from voice.cartesia_io import FallbackCartesiaSTT, FallbackCartesiaTTS
 from voice.recorder import CallRecorder
-from voice.stt_whisper import FasterWhisperSTT
-from voice.tts_piper import PiperTTS
 
 logger = logging.getLogger("voice.agent")
 
@@ -77,13 +75,7 @@ def _build_stt():
             model=settings.cartesia_stt_model,
             language=settings.cartesia_stt_language,
         )
-    logger.info("No Cartesia keys set; using local Faster-Whisper.")
-    return FasterWhisperSTT(
-        model_size=settings.whisper_model_size,
-        device=settings.whisper_device,
-        compute_type=settings.whisper_compute_type,
-        language="en",
-    )
+    raise RuntimeError("Set at least one CARTESIA_API_KEY. Voice speech-to-text uses Cartesia.")
 
 
 def _build_tts():
@@ -103,8 +95,7 @@ def _build_tts():
             voice=settings.cartesia_tts_voice_id,
             speed=settings.cartesia_tts_speed,
         )
-    logger.info("No Cartesia keys set; using local Piper.")
-    return PiperTTS(settings.piper_model_file, speed=settings.piper_speed, use_cuda=False)
+    raise RuntimeError("Set at least one CARTESIA_API_KEY. Voice speech uses Cartesia.")
 
 
 def prewarm(proc: JobProcess) -> None:

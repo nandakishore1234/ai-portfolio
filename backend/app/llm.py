@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_ollama import ChatOllama
 
 from app.config import settings
 from app.keys import KeyPool, is_retryable_provider_error
@@ -40,12 +39,7 @@ class FallbackChat:
 
 def build_chat_llm():
     keys = settings.gemini_keys
-    if keys:
-        logger.info("Using Gemini model %s with %s API key(s).", settings.gemini_model, len(keys))
-        return FallbackChat(KeyPool(keys, name="Gemini"), settings.gemini_model)
-    logger.info("No Gemini keys set; using Ollama %s.", settings.ollama_chat_model)
-    return ChatOllama(
-        model=settings.ollama_chat_model,
-        base_url=settings.ollama_base_url,
-        temperature=0.2,
-    )
+    if not keys:
+        raise RuntimeError("Set at least one GEMINI_API_KEY. Chat uses Gemini.")
+    logger.info("Using Gemini model %s with %s API key(s).", settings.gemini_model, len(keys))
+    return FallbackChat(KeyPool(keys, name="Gemini"), settings.gemini_model)

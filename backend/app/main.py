@@ -21,8 +21,8 @@ async def lifespan(app: FastAPI):
         app.state.ready = True
     except Exception as exc:
         app.state.error = (
-            "The assistant could not start. Check Gemini keys (or Ollama), "
-            f"{settings.ollama_embed_model} embeddings, and Qdrant. {exc}"
+            "The assistant could not start. Check Gemini keys, "
+            f"{settings.gemini_embed_model} embeddings, and Qdrant. {exc}"
         )
     yield
 

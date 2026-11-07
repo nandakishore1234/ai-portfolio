@@ -10,9 +10,6 @@ DATA_DIR = BACKEND_DIR / "data"
 
 
 class Settings(BaseSettings):
-    ollama_base_url: str = "http://127.0.0.1:11434"
-    ollama_chat_model: str = "qwen2"
-    ollama_embed_model: str = "nomic-embed-text"
     qdrant_url: str = "http://127.0.0.1:6333"
     qdrant_api_key: str = ""
     qdrant_collection: str = "nanda_portfolio"
@@ -31,11 +28,6 @@ class Settings(BaseSettings):
     livekit_api_key: str = "devkey"
     livekit_api_secret: str = "secretsecretsecretsecretsecretsecret12"
     livekit_room_prefix: str = "nanda-voice"
-    whisper_model_size: str = "base"
-    whisper_device: str = "cpu"
-    whisper_compute_type: str = "int8"
-    piper_model_path: str = "data/piper/en_US-ryan-high.onnx"
-    piper_speed: float = 1.0
     voice_api_base: str = "http://127.0.0.1:8000"
     voice_idle_processes: int = 2
 
@@ -48,6 +40,7 @@ class Settings(BaseSettings):
     gemini_api_key_4: str = ""
     gemini_api_key_5: str = ""
     gemini_model: str = "gemini-2.5-flash"
+    gemini_embed_model: str = "gemini-embedding-001"
 
     cartesia_api_key: str = ""
     cartesia_api_keys: str = ""
@@ -129,16 +122,6 @@ class Settings(BaseSettings):
         for key in self.cartesia_keys:
             voices.setdefault(key, default)
         return voices
-
-    @property
-    def piper_model_file(self) -> Path:
-        path = Path(self.piper_model_path)
-        if path.is_absolute():
-            return path
-        normalized = path.as_posix()
-        if normalized.startswith("data/"):
-            return DATA_DIR / normalized.removeprefix("data/")
-        return BACKEND_DIR / path
 
 
 settings = Settings()
