@@ -223,6 +223,8 @@ The resume also describes configuring ALSA/PulseAudio, hardware I/O peripherals,
 
 ### Desktop Kiosk Application
 
+This is not an AI project. Do not describe it as AI work. Mention it only when someone asks about the kiosk.
+
 I developed cross-platform Electron kiosk applications with:
 
 - Local API integration

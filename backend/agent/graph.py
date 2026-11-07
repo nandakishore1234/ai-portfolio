@@ -6,7 +6,7 @@ from langgraph.graph import END, START, StateGraph
 
 from agent.prompts import ANSWER_PROMPT, REWRITE_PROMPT, VOICE_ANSWER_PROMPT
 from agent.state import GraphState
-from app.rag.documents import origin_reply, pinned_documents
+from app.rag.documents import load_documents, origin_reply, pinned_documents
 
 
 def _fill(template: str, **values: str) -> str:
@@ -31,6 +31,11 @@ def _text(message) -> str:
     return str(content or "").strip()
 
 
+_PROJECT_ASK = re.compile(
+    r"\b(projects?|built|build|building|experience|work|worked|portfolio|what do you do)\b",
+    re.IGNORECASE,
+)
+
 _FOLLOW_UP = re.compile(
     r"\b(it|that|this|those|these|there|they|them|he|she|his|her|their|one|same)\b",
     re.IGNORECASE,
@@ -53,7 +58,11 @@ def build_rag_graph(llm, vector_store, top_k: int):
     def retrieve(state: GraphState):
         docs = list(vector_store.similarity_search(state["standalone_question"], k=top_k))
         seen = {doc.page_content for doc in docs}
-        for doc in pinned_documents():
+        extras = list(pinned_documents())
+        asked = f"{state.get('question', '')} {state.get('standalone_question', '')}"
+        if _PROJECT_ASK.search(asked):
+            extras.extend(doc for doc in load_documents() if doc.metadata.get("title") == "Projects")
+        for doc in extras:
             if doc.page_content not in seen:
                 docs.append(doc)
                 seen.add(doc.page_content)
