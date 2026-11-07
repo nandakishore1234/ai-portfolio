@@ -142,6 +142,18 @@ def insert_asset(
         return int(row[0])
 
 
+def get_asset(asset_id: int) -> dict | None:
+    with connect(rows=True) as conn:
+        row = conn.execute(
+            """
+            SELECT id, room, kind, identity, storage_path, public_url, mime_type, size_bytes, created_at
+            FROM assets WHERE id = %s
+            """,
+            (asset_id,),
+        ).fetchone()
+        return _serialize(row) if row else None
+
+
 def list_assets(limit: int = 100) -> list[dict]:
     with connect(rows=True) as conn:
         rows = conn.execute(

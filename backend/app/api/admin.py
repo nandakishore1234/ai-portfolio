@@ -8,7 +8,8 @@ from fastapi import APIRouter, Depends, File, HTTPException, Request, Response, 
 from agent.runtime import build_rag_stack, reset_voice_rag
 from app.auth import check_login, clear_session_cookie, current_admin, make_session_token, set_session_cookie
 from app.config import KNOWLEDGE_DIR
-from app.db import list_assets
+from app.db import get_asset, list_assets
+from app.seaweed import read_recording
 from app.schemas import AdminLoginRequest
 
 router = APIRouter()
@@ -69,6 +70,23 @@ def documents(_: str = Depends(current_admin)):
 @router.get("/admin/assets")
 def assets(_: str = Depends(current_admin)):
     return {"assets": list_assets()}
+
+
+@router.get("/admin/assets/{asset_id}/audio")
+def asset_audio(asset_id: int, _: str = Depends(current_admin)):
+    asset = get_asset(asset_id)
+    if not asset:
+        raise HTTPException(status_code=404, detail="Recording not found.")
+    try:
+        data = read_recording(str(asset["storage_path"]))
+    except Exception as exc:
+        raise HTTPException(status_code=404, detail="Recording file is missing.") from exc
+    filename = f"{asset['room'] or 'call'}.wav"
+    return Response(
+        content=data,
+        media_type=str(asset.get("mime_type") or "audio/wav"),
+        headers={"Content-Disposition": f'inline; filename="{filename}"'},
+    )
 
 
 @router.post("/admin/documents")

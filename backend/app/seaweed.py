@@ -25,6 +25,18 @@ def public_url(storage_path: str) -> str:
     return f"{_filer_base()}{storage_path}"
 
 
+def read_recording(storage_path: str) -> bytes:
+    """Read a stored call WAV from SeaweedFS, or from the local fallback file."""
+    if storage_path.startswith("/"):
+        response = httpx.get(f"{_filer_base()}{storage_path}", timeout=60.0)
+        response.raise_for_status()
+        return response.content
+    path = Path(storage_path)
+    if not path.is_file():
+        raise FileNotFoundError(storage_path)
+    return path.read_bytes()
+
+
 def upload_bytes(storage_path: str, data: bytes, content_type: str = "audio/wav") -> str:
     """PUT a file to the SeaweedFS filer. Returns the filer path."""
     if not storage_path.startswith("/"):
