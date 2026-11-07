@@ -69,7 +69,10 @@ def documents(_: str = Depends(current_admin)):
 
 @router.get("/admin/assets")
 def assets(_: str = Depends(current_admin)):
-    return {"assets": list_assets()}
+    rows = list_assets()
+    for row in rows:
+        row["public_url"] = f"/api/admin/assets/{row['id']}/audio"
+    return {"assets": rows}
 
 
 @router.get("/admin/assets/{asset_id}/audio")
